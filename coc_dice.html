@@ -1,0 +1,387 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CoC 克苏鲁的呼唤 骰子工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #1a1a2e;
+            color: #e6e6ff;
+            min-height: 100vh;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0, 0, 0, 0.3) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(0, 0, 0, 0.3) 0%, transparent 20%);
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: rgba(10, 10, 30, 0.8);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.5);
+            border: 1px solid #3a3a5e;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #3a3a5e;
+        }
+
+        h1 {
+            color: #ff6b6b;
+            margin-bottom: 10px;
+            font-size: clamp(1.8rem, 4vw, 2.5rem);
+        }
+
+        .subtitle {
+            color: #95a5a6;
+            font-style: italic;
+        }
+
+        .dice-section {
+            margin-bottom: 30px;
+        }
+
+        .dice-controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .dice-btn {
+            background-color: #2c3e50;
+            color: white;
+            border: none;
+            padding: 15px 10px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .dice-btn:hover {
+            background-color: #ff6b6b;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .dice-btn.d100 {
+            background-color: #8e44ad;
+        }
+
+        .dice-btn.d100:hover {
+            background-color: #a569bd;
+        }
+
+        .custom-dice {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .custom-dice input {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #3a3a5e;
+            background-color: #2c3e50;
+            color: white;
+            font-size: 1rem;
+        }
+
+        .custom-dice button {
+            padding: 10px 20px;
+            background-color: #27ae60;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .custom-dice button:hover {
+            background-color: #2ecc71;
+        }
+
+        .result-area {
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 20px;
+            min-height: 200px;
+            border: 1px solid #3a3a5e;
+        }
+
+        .result-title {
+            color: #3498db;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .result-list {
+            list-style: none;
+        }
+
+        .result-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background-color: rgba(44, 62, 80, 0.5);
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-item.success {
+            border-left: 4px solid #27ae60;
+        }
+
+        .result-item.failure {
+            border-left: 4px solid #e74c3c;
+        }
+
+        .result-item.critical {
+            border-left: 4px solid #f39c12;
+            background-color: rgba(155, 89, 182, 0.3);
+        }
+
+        .timestamp {
+            color: #95a5a6;
+            font-size: 0.8rem;
+        }
+
+        .clear-btn {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-btn:hover {
+            background-color: #c0392b;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #3a3a5e;
+            color: #95a5a6;
+            font-size: 0.9rem;
+        }
+
+        /* 动画效果 */
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .rolling {
+            animation: roll 0.5s ease-in-out;
+        }
+
+        /* 响应式调整 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .dice-controls {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .custom-dice {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔮 克苏鲁的呼唤 骰子工具</h1>
+            <p class="subtitle">CoC TRPG Dice Roller</p>
+        </header>
+
+        <section class="dice-section">
+            <div class="dice-controls">
+                <button class="dice-btn" data-dice="4">d4</button>
+                <button class="dice-btn" data-dice="6">d6</button>
+                <button class="dice-btn" data-dice="8">d8</button>
+                <button class="dice-btn" data-dice="10">d10</button>
+                <button class="dice-btn" data-dice="12">d12</button>
+                <button class="dice-btn" data-dice="20">d20</button>
+                <button class="dice-btn d100" data-dice="100">d100</button>
+            </div>
+
+            <div class="custom-dice">
+                <input type="text" id="customDiceInput" placeholder="例如: 2d6, 3d10, 1d100" />
+                <button id="customRollBtn">自定义投掷</button>
+            </div>
+
+            <div class="result-area">
+                <h3 class="result-title">投掷结果</h3>
+                <ul id="resultList" class="result-list"></ul>
+                <button class="clear-btn" id="clearBtn">清空记录</button>
+            </div>
+        </section>
+
+        <footer>
+            <p>克苏鲁的呼唤骰子工具 | 随时随地，打开即用</p>
+        </footer>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const diceButtons = document.querySelectorAll('.dice-btn');
+        const customRollBtn = document.getElementById('customRollBtn');
+        const customDiceInput = document.getElementById('customDiceInput');
+        const resultList = document.getElementById('resultList');
+        const clearBtn = document.getElementById('clearBtn');
+
+        // 骰子投掷函数
+        function rollDice(sides) {
+            return Math.floor(Math.random() * sides) + 1;
+        }
+
+        // 解析自定义骰子格式 (如 2d6, 3d10)
+        function parseCustomDice(input) {
+            const regex = /(\d+)d(\d+)/i;
+            const match = input.match(regex);
+            
+            if (!match) {
+                return null;
+            }
+            
+            return {
+                count: parseInt(match[1]),
+                sides: parseInt(match[2])
+            };
+        }
+
+        // 添加结果到列表
+        function addResult(diceType, results, total = null) {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString();
+            
+            // 判断d100的结果类型
+            let resultClass = '';
+            if (diceType === 'd100') {
+                const value = results[0];
+                if (value === 1) {
+                    resultClass = 'critical success'; // 大成功
+                } else if (value <= 5) {
+                    resultClass = 'success'; // 成功
+                } else if (value >= 96) {
+                    resultClass = 'critical failure'; // 大失败
+                } else {
+                    resultClass = 'failure'; // 失败
+                }
+            }
+
+            const li = document.createElement('li');
+            li.className = `result-item ${resultClass}`;
+            
+            let resultText = '';
+            if (total !== null) {
+                resultText = `${diceType}: ${results.join(' + ')} = ${total}`;
+            } else {
+                resultText = `${diceType}: ${results[0]}`;
+            }
+
+            li.innerHTML = `
+                <span>${resultText}</span>
+                <span class="timestamp">${timeStr}</span>
+            `;
+            
+            // 添加到列表顶部
+            resultList.insertBefore(li, resultList.firstChild);
+            
+            // 添加动画效果
+            li.classList.add('rolling');
+            setTimeout(() => {
+                li.classList.remove('rolling');
+            }, 500);
+        }
+
+        // 单个骰子按钮点击事件
+        diceButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const sides = parseInt(btn.dataset.dice);
+                const result = rollDice(sides);
+                addResult(`d${sides}`, [result]);
+            });
+        });
+
+        // 自定义骰子投掷
+        customRollBtn.addEventListener('click', () => {
+            const input = customDiceInput.value.trim();
+            const diceInfo = parseCustomDice(input);
+            
+            if (!diceInfo) {
+                alert('请输入正确的格式，例如: 2d6, 3d10, 1d100');
+                return;
+            }
+            
+            const { count, sides } = diceInfo;
+            const results = [];
+            
+            for (let i = 0; i < count; i++) {
+                results.push(rollDice(sides));
+            }
+            
+            const total = results.reduce((a, b) => a + b, 0);
+            addResult(`${count}d${sides}`, results, total);
+            
+            // 清空输入框
+            customDiceInput.value = '';
+        });
+
+        // 清空记录
+        clearBtn.addEventListener('click', () => {
+            if (confirm('确定要清空所有投掷记录吗？')) {
+                resultList.innerHTML = '';
+            }
+        });
+
+        // 支持按回车键触发自定义投掷
+        customDiceInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                customRollBtn.click();
+            }
+        });
+
+        // 页面加载时的欢迎信息
+        window.addEventListener('load', () => {
+            const li = document.createElement('li');
+            li.className = 'result-item';
+            li.innerHTML = `
+                <span>欢迎使用CoC骰子工具！选择骰子类型开始投掷吧～</span>
+                <span class="timestamp">${new Date().toLocaleTimeString()}</span>
+            `;
+            resultList.appendChild(li);
+        });
+    </script>
+</body>
+</html>
